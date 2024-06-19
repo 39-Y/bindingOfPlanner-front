@@ -20,15 +20,15 @@
 </template>
 
 <script setup>
-  import { onMounted, reactive } from "vue";
+  import { onMounted, ref } from "vue";
   import ActionCard from "./ActionCard.vue";
-  import { getHi } from "@/api/actions";
+  import { getActions} from "@/api/actions";
 
   onMounted(() =>{
     getPosts();
   });
 
-  const posts = reactive([
+  const posts = ref([
     {cardTitle: 'Title1', cardContent:'content1', isDone: true},
     {cardTitle: 'Title2', cardContent:'content2', isDone: true, cardTag: "Project"},
     {cardTitle: 'Title3', cardContent:'content3', isDone: false},
@@ -38,9 +38,16 @@
   ]);
 
   const getPosts = async () => {
-    //posts = 
-    const res = await getHi();
-    console.dir(res);
+    const res = await getActions();
+    posts.value = transformDataList(res.data);
+  };
+
+  const transformDataList = (actionList) => {
+    return actionList.map( action => ({
+      cardTitle: action.title, 
+      cardContent: action.content, 
+      isDone: false
+    }));
   };
   
 </script>

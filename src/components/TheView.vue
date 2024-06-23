@@ -2,16 +2,15 @@
   <v-container class="">
     <v-row no-gutters>
       <v-col
-        v-for="post in posts"
-        :key="post"
+        v-for="(action,idx) in actions"
+        :key="action"
         cols="12"
         sm="4"
       >
         <v-sheet class="ma-2 pa-2">
-          <ActionCard :cardTitle="post.cardTitle" 
-                      :cardContent="post.cardContent" 
-                      :isDone="post.isDone" 
-                      :cardTag="post.cardTag">
+          <ActionCard :action="action" 
+                      :idx="idx"
+                      @update:action="updateAction">
           </ActionCard>
         </v-sheet>
       </v-col>
@@ -25,28 +24,34 @@
   import { getActions} from "@/api/actions";
 
   onMounted(() =>{
-    getPosts();
+    loadActions();
   });
 
-  const posts = ref([
-    {cardTitle: 'Title1', cardContent:'content1', isDone: true},
-    {cardTitle: 'Title2', cardContent:'content2', isDone: true, cardTag: "Project"},
-    {cardTitle: 'Title3', cardContent:'content3', isDone: false},
-    {cardTitle: 'Title4', cardContent:'content4', isDone: true},
-    {cardTitle: 'Title5', cardContent:'content5', isDone: true},
-    {cardTitle: 'Title6', cardContent:'content6', isDone: false},
-  ]);
+  const actions = ref([]);
+  const updateActionSet = new Set();
 
-  const getPosts = async () => {
+  const updateAction = (n) => {
+    actions.value[n.idx] = n;
+    updateActionSet.add({
+      id: n.id,
+      title: n.cardTitle,
+      content: n.cardContent,
+      isDone : n.isDone
+    });
+  }
+
+  const loadActions = async () => {
     const res = await getActions();
-    posts.value = transformDataList(res.data);
+    actions.value = toActionCardList(res.data);
   };
 
-  const transformDataList = (actionList) => {
+  const toActionCardList = (actionList) => {
     return actionList.map( action => ({
+      id:action.id,
       cardTitle: action.title, 
       cardContent: action.content, 
-      isDone: false
+      isDone: action.doneDate? true : false,
+      doStartDate: action.doStartDate
     }));
   };
   

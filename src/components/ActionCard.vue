@@ -9,14 +9,12 @@
       <span>{{ action.cardTag === 'Action'? '⚡Action' : '🚀Project' }}</span>
     </v-chip>
     <div>
-      <v-card-title v-if="!isEditing" @click="startEditing">{{ props.action.cardTitle }}</v-card-title>
-      <v-card-subtitle>
-        {{ action.doStartDate || 'when?' }}
-      </v-card-subtitle>
+      <v-card-title v-if="!isTitleEditing" @click="editTitle">{{ action.cardTitle }}</v-card-title>
+      
       <v-text-field
-              v-if="isEditing"
-              @blur="stopEditing" 
-              @keyup.enter="stopEditing" 
+              v-if="isTitleEditing"
+              @blur="stopTitleEdit" 
+              @keyup.enter="stopTitleEdit" 
               ref="inputField"
               label="Solo"
               v-model="action.cardTitle"
@@ -24,7 +22,18 @@
               class="opacity-40"
             ></v-text-field>
     </div>
-    
+    <div>
+      <v-card-subtitle v-if="!isDoDateEditing" @click="editDoDate">
+        {{ action.doStartDate || 'when?' }}
+      </v-card-subtitle>
+      <v-date-input v-if="isDoDateEditing" 
+                    @blur="stopDoDateEdit"
+                    clearable 
+                    label="Date input" 
+                    variant="solo" 
+                    v-model="action.doStartDate"
+                    ></v-date-input>
+    </div>
     <v-card-text>{{ action.cardContent }}</v-card-text>
     <v-checkbox
             color="error"
@@ -37,7 +46,9 @@
 
 <script setup>
 import { defineProps, nextTick, ref, watch } from 'vue';
-const isEditing = ref(false);
+import { fa } from 'vuetify/locale';
+const isTitleEditing = ref(false);
+const isDoDateEditing = ref(false);
 const inputField = ref(null);
 const props = defineProps(
 {  action: {
@@ -59,15 +70,22 @@ watch( props.action,(newAction) => {
   emit('update:action', newAction);
 });
 
-const startEditing = async () => {
-  isEditing.value = true;
+const editTitle = async () => {
+  isTitleEditing.value = true;
   await nextTick;
   inputField.value.focus();
-
 }
 
-const stopEditing = () => {
-  isEditing.value = false;
+const editDoDate = () => {
+  isDoDateEditing.value = true;
+}
+
+const stopTitleEdit = () => {
+  isTitleEditing.value = false;
+}
+
+const stopDoDateEdit = () => {
+  isDoDateEditing.value = false;
 }
 
 </script>

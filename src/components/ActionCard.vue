@@ -10,11 +10,11 @@
     </v-chip>
     <div>
       <v-card-title v-if="!isTitleEditing" @click="editTitle">{{ actionCard.cardTitle }}</v-card-title>
-      
+
       <v-text-field
               v-if="isTitleEditing"
-              @blur="stopTitleEdit" 
-              @keyup.enter="stopTitleEdit" 
+              @blur="stopTitleEdit"
+              @keyup.enter="stopTitleEdit"
               ref="inputField"
               label="Solo"
               v-model="actionCard.cardTitle"
@@ -26,19 +26,19 @@
       <v-card-subtitle v-if="!isDoDateEditing" @click="editDoDate">
         {{ doStartDate || 'when?' }}
       </v-card-subtitle>
-      <v-date-input v-if="isDoDateEditing" 
-                    class="opacity-40"
+      <v-date-input v-if="isDoDateEditing"
                     @blur="stopDoDateEdit"
-                    clearable 
+                    clearable
                     show-adjacent-months
-                    label="Date input" 
-                    variant="solo" 
+                    label="Date input"
+                    variant="solo"
                     placeholder="yyyy/mm/dd"
                     prepend-icon=""
                     prepend-inner-icon="$calendar"
                     v-model="actionCard.doStartDate"
                     :append-inner-icon="marker ? 'mdi-calendar-outline' : 'mdi-calendar-multiple'"
                     @click:append-inner="toggleMarker"
+                    :multiple="marker ? 'range' : null"
                     ></v-date-input>
     </div>
     <v-card-text>{{ actionCard.cardContent }}</v-card-text>
@@ -82,7 +82,7 @@ const toggleMarker = () => {
 const emit = defineEmits(['update:action']);
 
 watch( actionCard.value, (newAction) => {
-  newAction['idx'] = props.idx; 
+  newAction['idx'] = props.idx;
   console.log("newAction11:",newAction);
   emit('update:action', newAction);
 });

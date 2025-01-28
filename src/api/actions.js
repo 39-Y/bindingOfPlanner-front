@@ -5,5 +5,7 @@ export function getHi() {
 }
 
 export function getActions() {
-  return actions.get('/list');
+  let result= actions.get('/list');
+
+  return result? result : {};
 }

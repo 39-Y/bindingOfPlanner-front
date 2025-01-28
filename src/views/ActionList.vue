@@ -1,6 +1,9 @@
 <template>
   <div>
     <v-container class="">
+      <v-col cols="auto">
+        <v-btn density="compact" icon="mdi-plus"></v-btn>
+      </v-col>
       <v-row no-gutters>
 
           <v-col
@@ -38,25 +41,52 @@
   onMounted(() =>{
     loadActions();
   });
-
+  const actionCache = {
+    update: [],
+    delete: [],
+    insert: []
+  }
   const actions = ref([]);
-  const updateActionSet = new Set();
-  const updateAction = (n) => {
-    actions.value[n.idx] = n;
-    updateActionSet.add({
-      id: n.id,
-      title: n.cardTitle,
-      content: n.cardContent,
-      isDone : n.isDone
-    });
+  const updateAction = (action) => {
+    actions.value[action.idx] = action;
+    addToCacheByUpdate(action);
+
+    console.log("addToCacheByUpdate",actionCache.update)
   }
 
+  const addToCacheByUpdate = (action) => {
+    const data = parseActionCache(action);
+    const cacheIdx = indexOfCache('update', action);
+
+    if(cacheIdx < 0){
+      actionCache.update.push(data);
+      return;
+    }
+    actionCache.update[cacheIdx] = data;
+  }
+
+  const parseActionCache = (action) => {
+    return {
+      id: action.id,
+      title: action.cardTitle,
+      content: action.cardContent,
+      isDone : action.isDone
+    };
+  }
+
+  const indexOfCache = (cmmd, action) => {
+    return actionCache[cmmd].findIndex(act => act.id === action.id);
+  }
   const loadActions = async () => {
     const res = await getActions();
+
     actions.value = toActionCardList(res.data);
   };
 
   const toActionCardList = (actionList) => {
+    if(!actionList){
+      return [];
+    }
     return actionList.map( action => ({
       id:action.id,
       cardTitle: action.title,
@@ -67,7 +97,3 @@
   };
 
 </script>
-
-<style lang="scss" scoped>
-
-</style>

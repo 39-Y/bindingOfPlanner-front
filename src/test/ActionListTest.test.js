@@ -19,7 +19,6 @@ describe( 'ActionList Test', () =>{
     getActions.mockResolvedValueOnce({
         'data':[
           {
-            idx: 0,
             id: 1001,
             title: 'test title',
             content: 'test content',
@@ -34,7 +33,7 @@ describe( 'ActionList Test', () =>{
 
   it('[updateAction] => actionList, updateActionSet의 크기가 0보다 크다 ', ()=>{
     //act
-    actionListComp.updateAction(testAction);
+    actionListComp.updateAction(0,testAction);
 
     //asert
     expect(actionListComp.actions.length).toBeGreaterThan(0);
@@ -44,12 +43,36 @@ describe( 'ActionList Test', () =>{
   it('[updateAction] => updateActionSet에 추가된 Action은 TestAction이다. ', ()=>{
 
     //act
-    actionListComp.updateAction(testAction);
+    actionListComp.updateAction(0,testAction);
     const updateAction = actionListComp.actionCache.update[0];
 
     //asert
+    expect(updateAction.id).toBe(testAction.id);
     expect(updateAction.title).toBe(testAction.cardTitle);
     expect(updateAction.content).toBe(testAction.cardContent);
+    expect(updateAction.isDone).toBe(testAction.isDone);
+  })
+
+  it('[addAction] => Actions에 빈 Action이 새로 생성. ', ()=>{
+
+    //act
+    actionListComp.addNewAction();
+    const firstAction = actionListComp.actions[0];
+
+    //asert
+    expect(firstAction.title).toBe('Untitle');
+    expect(firstAction.content).toBe('');
+  })
+
+  it('[addAction] => actionCache.insert에 Action이 저장 ', ()=>{
+
+    //act
+    actionListComp.addNewAction();
+    const insertAction = actionListComp.actionCache.insert[0];
+
+    //asert
+    expect(insertAction.title).toBe('Untitle');
+    expect(insertAction.content).toBe('');
   })
 
 })

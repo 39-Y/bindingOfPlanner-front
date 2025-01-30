@@ -2,7 +2,7 @@
   <div>
     <v-container class="">
       <v-col cols="auto">
-        <v-btn density="compact" icon="mdi-plus"></v-btn>
+        <v-btn density="compact" icon="mdi-plus" @click="addNewAction"></v-btn>
       </v-col>
       <v-row no-gutters>
 
@@ -43,7 +43,14 @@
     insert: []
   }
   const actions = ref([]);
-
+  const initACtion = () => {
+    return {
+    id: -1,
+    title: 'Untitle',
+    content: '',
+    planDate: '',
+    isDone : false
+  }}
   const updateAction = (idx, action) => {
     actions.value[idx] = action;
     addToCacheByUpdate(action);
@@ -71,9 +78,26 @@
     };
   }
 
+  const parseActionCard = (action) => {
+    return {
+      id:action.id,
+      cardTitle: action.title,
+      cardContent: action.content,
+      isDone: !!action.doneDate,
+      doStartDate: action.doStartDate
+    }
+  }
+
   const indexOfCache = (cmmd, action) => {
     return actionCache[cmmd].findIndex(act => act.id === action.id);
   }
+
+  const addNewAction = () => {
+    let newAction = initACtion();
+    actions.value.unshift(newAction);
+    actionCache.insert.push(newAction)
+  }
+
   const loadActions = async () => {
     const res = await getActions();
 
@@ -82,15 +106,9 @@
 
   const toActionCardList = (actionList) => {
     if(!actionList){
-      return [];
+      return [initACtion()];
     }
-    return actionList.map( action => ({
-      id:action.id,
-      cardTitle: action.title,
-      cardContent: action.content,
-      isDone: !!action.doneDate,
-      doStartDate: action.doStartDate
-    }));
+    return actionList.map( action => (parseActionCard(action)));
   };
 
   onMounted(() =>{

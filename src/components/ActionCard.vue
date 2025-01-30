@@ -13,8 +13,8 @@
 
       <v-text-field
               v-if="isTitleEditing"
-              @blur="stopTitleEdit"
-              @keyup.enter="stopTitleEdit"
+              @blur="stopTitleEditAndEmit"
+              @keydown.enter="handleEnter"
               ref="inputField"
               label="Solo"
               v-model="actionCard.cardTitle"
@@ -24,10 +24,10 @@
     </div>
     <div>
       <v-card-subtitle v-if="!isDoDateEditing" @click="editDoDate">
-        {{ doStartDate || 'when?' }}
+        {{ cardPlanDate || 'when?' }}
       </v-card-subtitle>
       <v-date-input v-if="isDoDateEditing"
-                    @blur="stopDoDateEdit"
+                    @blur="stopDoDateEditAndEmit"
                     clearable
                     show-adjacent-months
                     label="Date input"
@@ -35,7 +35,7 @@
                     placeholder="yyyy/mm/dd"
                     prepend-icon=""
                     prepend-inner-icon="$calendar"
-                    v-model="actionCard.doStartDate"
+                    v-model="actionCard.cardPlanDate"
                     :append-inner-icon="marker ? 'mdi-calendar-outline' : 'mdi-calendar-multiple'"
                     @click:append-inner="toggleMarker"
                     :multiple="marker ? 'range' : null"
@@ -55,37 +55,30 @@
 import { defineProps, nextTick, ref, watch } from 'vue';
 import { format } from 'date-fns';
 
-const isTitleEditing = ref(false);
-const isDoDateEditing = ref(false);
-const inputField = ref(null);
 const props = defineProps(
 {  action: {
     type: Object,
     required: true
   },
-  idx:{
-    type: Number,
-    required: true
-  }
 });
+const emit = defineEmits(['update:action']);
 
-
-const marker = ref(false)
 const actionCard = ref(props.action);
-const doStartDate = ref("");
+const isChange = ref(false);
+const isTitleEditing = ref(false);
+const isDoDateEditing = ref(false);
+const inputField = ref(null);
+const marker = ref<Boolean>false
+const cardPlanDate = ref("");
+
 const toggleMarker = () => {
   marker.value = !marker.value
 }
 
 
-
-const emit = defineEmits(['update:action']);
-
-watch( actionCard.value, (newAction) => {
-  newAction['idx'] = props.idx;
-  console.log("newAction11:",newAction);
-  emit('update:action', newAction);
-});
+const handleEnter = (event) => {
+  event.target.blur();
+}
 
 const editTitle = async () => {
   isTitleEditing.value = true;
@@ -97,17 +90,35 @@ const editDoDate = () => {
   isDoDateEditing.value = true;
 }
 
-const stopTitleEdit = () => {
+const stopTitleEditAndEmit = () => {
   isTitleEditing.value = false;
+  emitAction();
   console.log("actionCard:", actionCard.value);
 }
 
-const stopDoDateEdit = () => {
+const stopDoDateEditAndEmit = () => {
   isDoDateEditing.value = false;
-  if(actionCard.value.doStartDate){
-    doStartDate.value = format(actionCard.value.doStartDate, 'yyyy/MM/dd');
+  if(actionCard.value.cardPlanDate){
+    cardPlanDate.value = format(actionCard.value.cardPlanDate, 'yyyy/MM/dd');
+  }
+  emitAction();
+}
+
+const emitAction = () =>{
+  if(isChange.value){
+    emit('update:action', actionCard.value);
+    isChange.value = false;
   }
 }
+
+watch( actionCard.value, () => {
+  if(!(isTitleEditing.value || isDoDateEditing.value)){
+    emit('update:action', actionCard.value);
+  }else{
+    isChange.value = true;
+  }
+});
+
 
 </script>
 

@@ -20,8 +20,7 @@
                 @change="console.log('change')"
               >
                 <ActionCard :action="action"
-                            :idx="idx"
-                            @update:action="updateAction">
+                            @update:action="updateAction(idx, action)">
                 </ActionCard>
               </VueDraggableNext>
             </v-sheet>
@@ -38,19 +37,16 @@
   import { getActions} from "@/api/actions";
   import { VueDraggableNext } from 'vue-draggable-next'
 
-  onMounted(() =>{
-    loadActions();
-  });
   const actionCache = {
     update: [],
     delete: [],
     insert: []
   }
   const actions = ref([]);
-  const updateAction = (action) => {
-    actions.value[action.idx] = action;
-    addToCacheByUpdate(action);
 
+  const updateAction = (idx, action) => {
+    actions.value[idx] = action;
+    addToCacheByUpdate(action);
     console.log("addToCacheByUpdate",actionCache.update)
   }
 
@@ -70,6 +66,7 @@
       id: action.id,
       title: action.cardTitle,
       content: action.cardContent,
+      planDate: action.cardPlanDate,
       isDone : action.isDone
     };
   }
@@ -91,9 +88,13 @@
       id:action.id,
       cardTitle: action.title,
       cardContent: action.content,
-      isDone: action.doneDate? true : false,
+      isDone: !!action.doneDate,
       doStartDate: action.doStartDate
     }));
   };
+
+  onMounted(() =>{
+    loadActions();
+  });
 
 </script>

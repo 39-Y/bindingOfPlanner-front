@@ -46,10 +46,10 @@
   const initACtion = () => {
     return {
     id: -1,
-    title: 'Untitle',
-    content: '',
-    planDate: '',
-    isDone : false
+    cardTitle: 'Untitle',
+    cardContent: '',
+    isDone : false,
+    uniqKey: makeUniqueKey()
   }}
   const updateActionAndCache = (idx, action) => {
     actions.value[idx] = action;
@@ -62,6 +62,8 @@
 
     if(cacheIdx < 0){
       actionCache[cmmd].push(parsingData);
+      console.log("addToCache",actionCache)
+
       return;
     }
     actionCache[cmmd][cacheIdx] = parsingData;
@@ -107,7 +109,7 @@
   const addNewAction = () => {
     let newAction = initACtion();
     actions.value.unshift(newAction);
-    actionCache.insert.push(newAction)
+    actionCache.insert.push(parseActionCache(newAction));
   }
 
   const loadActions = async () => {

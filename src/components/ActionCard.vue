@@ -17,10 +17,10 @@
 
       <v-text-field
               v-if="isTitleEditing"
-              @blur="stopTitleEditAndEmit"
+              @blur="stopEditAndEmit"
               @keydown.enter="handleEnter"
               ref="inputField"
-              label="Solo"
+              label="title"
               v-model="actionCard.cardTitle"
               variant="solo"
               class="opacity-40 actionCardTitle"
@@ -32,8 +32,10 @@
         {{ cardPlanDate || 'when?' }}
       </v-card-subtitle>
       <v-date-input v-if="isDoDateEditing"
-                    @blur="stopDoDateEditAndEmit"
+                    @blur="stopEditAndEmit"
+                    ref="dateInputField"
                     clearable
+                    @click:clear="clearDateInput"
                     show-adjacent-months
                     label="Date input"
                     variant="solo"
@@ -46,7 +48,7 @@
                     :multiple="marker ? 'range' : null"
                     ></v-date-input>
     </div>
-    <v-card-text>{{ actionCard.cardContent }}</v-card-text>
+    <v-card-text>{{ actionCard.cardContent || '-' }}</v-card-text>
     <v-checkbox
             color="error"
             label="isDone"
@@ -73,7 +75,8 @@ const isChange = ref(false);
 const isTitleEditing = ref(false);
 const isDoDateEditing = ref(false);
 const inputField = ref(null);
-const marker = ref<Boolean>false
+const dateInputField = ref(null);
+const marker = ref(false)
 const cardPlanDate = ref("");
 
 const toggleMarker = () => {
@@ -85,28 +88,33 @@ const handleEnter = (event) => {
   event.target.blur();
 }
 
+const clearDateInput = () => {
+  actionCard.value.cardPlanDate = undefined;
+  cardPlanDate.value = '';
+  emitAction();
+}
+
 const editTitle = async () => {
   isTitleEditing.value = true;
   await nextTick;
   inputField.value.focus();
 }
 
-const editDoDate = () => {
+const editDoDate = async () => {
   isDoDateEditing.value = true;
+  await nextTick;
+  dateInputField.value.$el.querySelector("input").focus();
 }
-
-const stopTitleEditAndEmit = () => {
+const stopEditAndEmit = () => {
   isTitleEditing.value = false;
-  emitAction();
-  console.log("actionCard:", actionCard.value);
-}
-
-const stopDoDateEditAndEmit = () => {
   isDoDateEditing.value = false;
+
   if(actionCard.value.cardPlanDate){
     cardPlanDate.value = format(actionCard.value.cardPlanDate, 'yyyy/MM/dd');
   }
+
   emitAction();
+  console.log("actionCard:", actionCard.value);
 }
 
 const emitAction = () =>{

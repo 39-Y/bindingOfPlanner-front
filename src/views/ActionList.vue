@@ -20,7 +20,7 @@
                 @change="console.log('change')"
               >
                 <ActionCard :action="action"
-                            @update:action="updateAction(idx, action)">
+                            @update:action="updateActionAndCache(idx, action)">
                 </ActionCard>
               </VueDraggableNext>
             </v-sheet>
@@ -51,22 +51,28 @@
     planDate: '',
     isDone : false
   }}
-  const updateAction = (idx, action) => {
+  const updateActionAndCache = (idx, action) => {
     actions.value[idx] = action;
-    addToCacheByUpdate(action);
-    console.log("addToCacheByUpdate",actionCache.update)
+    updateActionCache(action);
   }
-
-  const addToCacheByUpdate = (action) => {
-    const data = parseActionCache(action);
-    const cacheIdx = indexOfCache('update', action);
+  const updateActionCache = (action) => {
+    let cmmd = isInsert(action) ? 'insert' : 'update';
+    const parsingData = parseActionCache(action);
+    const cacheIdx = indexOfCache(cmmd, action);
 
     if(cacheIdx < 0){
-      actionCache.update.push(data);
+      actionCache[cmmd].push(parsingData);
       return;
     }
-    actionCache.update[cacheIdx] = data;
+    actionCache[cmmd][cacheIdx] = parsingData;
+
+    console.log("addToCache",actionCache)
   }
+
+  const isInsert = (action) => {
+    return action.id < 0;
+  }
+
 
   const parseActionCache = (action) => {
     return {
@@ -74,7 +80,8 @@
       title: action.cardTitle,
       content: action.cardContent,
       planDate: action.cardPlanDate,
-      isDone : action.isDone
+      isDone : action.isDone,
+      uniqKey: action.uniqKey || makeUniqueKey()
     };
   }
 
@@ -83,13 +90,18 @@
       id:action.id,
       cardTitle: action.title,
       cardContent: action.content,
-      isDone: !!action.doneDate,
-      doStartDate: action.doStartDate
+      isDone: !!action.isDone,
+      cardPlanDate: action.planDate,
+      uniqKey: action.uniqKey || makeUniqueKey()
     }
   }
 
+  const makeUniqueKey = () => {
+    const randomTime = Date.now() + Math.floor(Math.random() *  1000000000000);
+    return randomTime.toString(36) + Math.random().toString(36).substring(2, 5);
+  }
   const indexOfCache = (cmmd, action) => {
-    return actionCache[cmmd].findIndex(act => act.id === action.id);
+    return actionCache[cmmd].findIndex(act => act.uniqKey === action.uniqKey);
   }
 
   const addNewAction = () => {
@@ -102,13 +114,14 @@
     const res = await getActions();
 
     actions.value = toActionCardList(res.data);
+    console.log("actions:",actions.value)
   };
 
   const toActionCardList = (actionList) => {
     if(!actionList){
-      return [initACtion()];
+      return [];
     }
-    return actionList.map( action => (parseActionCard(action)));
+    return actionList.map(parseActionCard);
   };
 
   onMounted(() =>{

@@ -6,10 +6,14 @@
       label
     >
       <v-icon icon="mdi-label" start></v-icon>
-      <span>{{ actionCard.cardTag === 'Action'? '⚡Action' : '🚀Project' }}</span>
+      <span>🚀Project</span>
     </v-chip>
     <div>
-      <v-card-title v-if="!isTitleEditing" @click="editTitle">{{ actionCard.cardTitle }}</v-card-title>
+
+      <v-card-title v-if="!isTitleEditing"
+                    @click="editTitle"
+                    data-testid="action-title"
+      >{{ actionCard.cardTitle }}</v-card-title>
 
       <v-text-field
               v-if="isTitleEditing"
@@ -19,7 +23,8 @@
               label="Solo"
               v-model="actionCard.cardTitle"
               variant="solo"
-              class="opacity-40"
+              class="opacity-40 actionCardTitle"
+              data-testid="action-title-input"
             ></v-text-field>
     </div>
     <div>

@@ -31,19 +31,19 @@ describe( 'ActionList Test', () =>{
   })
 
 
-  it('[updateAction] => actionList, updateActionSet의 크기가 0보다 크다 ', ()=>{
+  it('[updateActionAndCache] => actions, cache의 크기가 0보다 크다 ', ()=>{
     //act
-    actionListComp.updateAction(0,testAction);
+    actionListComp.updateActionAndCache(0,testAction);
 
     //asert
     expect(actionListComp.actions.length).toBeGreaterThan(0);
     expect(actionListComp.actionCache.update.length).toBeGreaterThan(0);
   })
 
-  it('[updateAction] => updateActionSet에 추가된 Action은 TestAction이다. ', ()=>{
+  it('[updateActionAndCache] => cache에 추가된 Action은 TestAction이다. ', ()=>{
 
     //act
-    actionListComp.updateAction(0,testAction);
+    actionListComp.updateActionAndCache(0,testAction);
     const updateAction = actionListComp.actionCache.update[0];
 
     //asert
@@ -62,6 +62,7 @@ describe( 'ActionList Test', () =>{
     //asert
     expect(firstAction.title).toBe('Untitle');
     expect(firstAction.content).toBe('');
+    expect(firstAction.uniqKey).not.toBe('');
   })
 
   it('[addAction] => actionCache.insert에 Action이 저장 ', ()=>{
@@ -73,6 +74,13 @@ describe( 'ActionList Test', () =>{
     //asert
     expect(insertAction.title).toBe('Untitle');
     expect(insertAction.content).toBe('');
+    expect(insertAction.uniqKey).not.toBe('');
+
   })
 
+  it('', ()=>{
+    console.log(actionListComp.makeUniqueKey());
+    console.log(actionListComp.makeUniqueKey());
+    console.log(actionListComp.makeUniqueKey());
+  })
 })

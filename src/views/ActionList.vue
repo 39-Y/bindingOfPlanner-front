@@ -20,7 +20,7 @@
                 @change="console.log('change')"
               >
                 <ActionCard :action="action"
-                            @update:action="updateActionAndCache(idx, action)">
+                            @update:action="updateActionsAndCache(idx, action)">
                 </ActionCard>
               </VueDraggableNext>
             </v-sheet>
@@ -51,24 +51,25 @@
     isDone : false,
     uniqKey: makeUniqueKey()
   }}
-  const updateActionAndCache = (idx, action) => {
-    actions.value[idx] = action;
-    updateActionCache(action);
+  const updateActionsAndCache = (idx, action) => {
+    updateActions(idx, action);
+    updateCache(action);
   }
-  const updateActionCache = (action) => {
+
+  const updateActions = (idx, action) => {
+    actions.value[idx] = action;
+  }
+
+  const updateCache = (action) => {
     let cmmd = isInsert(action) ? 'insert' : 'update';
     const parsingData = parseActionCache(action);
     const cacheIdx = indexOfCache(cmmd, action);
 
     if(cacheIdx < 0){
       actionCache[cmmd].push(parsingData);
-      console.log("addToCache",actionCache)
-
       return;
     }
     actionCache[cmmd][cacheIdx] = parsingData;
-
-    console.log("addToCache",actionCache)
   }
 
   const isInsert = (action) => {
@@ -115,11 +116,11 @@
   const loadActions = async () => {
     const res = await getActions();
 
-    actions.value = toActionCardList(res.data);
+    actions.value = parseActionCardList(res.data);
     console.log("actions:",actions.value)
   };
 
-  const toActionCardList = (actionList) => {
+  const parseActionCardList = (actionList) => {
     if(!actionList){
       return [];
     }

@@ -25,6 +25,7 @@
               variant="solo"
               class="opacity-40 actionCardTitle"
               data-testid="action-title-input"
+              maxlength="120"
             ></v-text-field>
     </div>
     <div>

@@ -1,4 +1,5 @@
 <template>
+{{actionCache}}
   <div>
     <v-container class="">
       <v-col cols="auto">
@@ -20,7 +21,9 @@
                 @change="console.log('change')"
               >
                 <ActionCard :action="action"
-                            @update:action="updateActionsAndCache(idx, action)">
+                            @update:action="updateActionsAndCache(idx, action)"
+                            @delete:action="deleteActionsAndCache(idx, action)"
+                >
                 </ActionCard>
               </VueDraggableNext>
             </v-sheet>
@@ -37,11 +40,11 @@
   import { getActions} from "@/api/actions";
   import { VueDraggableNext } from 'vue-draggable-next'
 
-  const actionCache = {
+  const actionCache = ref({
     update: [],
     delete: [],
     insert: []
-  }
+  })
   const actions = ref([]);
   const initACtion = () => {
     return {
@@ -52,27 +55,62 @@
     uniqKey: makeUniqueKey()
   }}
   const updateActionsAndCache = (idx, action) => {
+
     updateActions(idx, action);
-    updateCache(action);
+    updateCacheByModifiedCard(action);
+    console.log(actionCache.value)
   }
 
   const updateActions = (idx, action) => {
     actions.value[idx] = action;
   }
 
-  const updateCache = (action) => {
-    let cmmd = isInsert(action) ? 'insert' : 'update';
-    const parsingData = parseActionCache(action);
-    const cacheIdx = indexOfCache(cmmd, action);
+  const updateCacheByModifiedCard = (actionCard) => {
+    const cmmd = isNewAction(actionCard) ? 'insert' : 'update';
+    const parsingData = parseActionCache(actionCard);
+    const cacheIdx = indexOfCache(cmmd, actionCard);
 
     if(cacheIdx < 0){
-      actionCache[cmmd].push(parsingData);
+      actionCache.value[cmmd].push(parsingData);
       return;
     }
-    actionCache[cmmd][cacheIdx] = parsingData;
+    actionCache.value[cmmd][cacheIdx] = parsingData;
   }
 
-  const isInsert = (action) => {
+  const indexOfCache = (cmmd, action) => {
+    if(!cmmd || !actionCache.value[cmmd]){
+      return -1;
+    }
+    return actionCache.value[cmmd].findIndex(act => act.uniqKey === action.uniqKey);
+  }
+
+  const deleteActionsAndCache = (idx, action) => {
+    deleteActions(idx);
+    updateCacheByDeletedCard(action);
+    console.log(actionCache.value)
+
+  }
+
+  const deleteActions = (idx) => {
+    actions.value.splice(idx, 1)
+  }
+
+  const updateCacheByDeletedCard = (actionCard) => {
+    const parsingData = parseActionCache(actionCard);
+    let cmmd = 'insert';
+
+    //기존 Action일 경우 delete cache에 저장
+    if(!isNewAction(actionCard)){
+      actionCache.value['delete'].push(parsingData);
+      cmmd = 'update';
+    }
+    //update or insert cache에서 action 삭제
+    const idx = indexOfCache(cmmd, actionCard);
+    if(idx > -1)
+      actionCache.value[cmmd].splice(idx, 1);
+  }
+
+  const isNewAction = (action) => {
     return action.id < 0;
   }
 
@@ -103,14 +141,11 @@
     const randomTime = Date.now() + Math.floor(Math.random() *  1000000000000);
     return randomTime.toString(36) + Math.random().toString(36).substring(2, 5);
   }
-  const indexOfCache = (cmmd, action) => {
-    return actionCache[cmmd].findIndex(act => act.uniqKey === action.uniqKey);
-  }
 
   const addNewAction = () => {
     let newAction = initACtion();
     actions.value.unshift(newAction);
-    actionCache.insert.push(parseActionCache(newAction));
+    actionCache.value.insert.push(parseActionCache(newAction));
   }
 
   const loadActions = async () => {

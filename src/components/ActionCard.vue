@@ -1,13 +1,41 @@
 <template>
   <v-card color="indigo">
-    <v-chip
-      class="ma-2"
-      color="pink"
-      label
-    >
-      <v-icon icon="mdi-label" start></v-icon>
-      <span>🚀Project</span>
-    </v-chip>
+    <v-card-item class="">
+      <v-chip
+        class="ma-2"
+        color="pink"
+        label
+      >
+        <v-icon icon="mdi-label" start></v-icon>
+        <span>🚀Project</span>
+      </v-chip>
+      <template v-slot:append>
+
+        <div class="d-flex justify-space-around">
+          <v-menu>
+            <template v-slot:activator="{ props }">
+              <v-btn icon="mdi-dots-vertical" variant="text" v-bind="props"></v-btn>
+            </template>
+            <v-list density="compact">
+              <v-list-item
+                v-for="(item, i) in cardMenu"
+                :key="i"
+                :value="i"
+                @click="item.method"
+              >
+                <template v-slot:prepend>
+                  <v-icon :class="item.icon" size="x-small"></v-icon>
+                </template>
+                <v-list-item-title class="text-caption">{{ item.title }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+
+        </div>
+      </template>
+
+    </v-card-item>
+
     <div>
 
       <v-card-title v-if="!isTitleEditing"
@@ -69,7 +97,7 @@ const props = defineProps(
     required: true
   },
 });
-const emit = defineEmits(['update:action']);
+const emit = defineEmits(['update:action', 'delete:action']);
 
 const actionCard = ref(props.action);
 const isChange = ref(false);
@@ -79,6 +107,32 @@ const inputField = ref(null);
 const dateInputField = ref(null);
 const marker = ref(false)
 const cardPlanDate = ref("");
+const cardMenu = [
+  { title: 'Delete',
+    icon:'fas fa-trash-can',
+    method: () => emitDeleteAction()
+  },
+  { title: 'Duplicate',
+    icon:'fas fa-clone',
+    method: () => emitDuplicateAction()
+  },
+  { title: 'Move to',
+    icon: 'fas fa-arrows-turn-right',
+    method: () => emitMoveToAction()
+  },
+];
+
+const emitDeleteAction = () => {
+  emit('delete:action', actionCard.value);
+};
+const emitDuplicateAction = () => {
+  console.log("ho")
+
+};
+const emitMoveToAction = () => {
+  console.log("ho")
+
+}
 
 const toggleMarker = () => {
   marker.value = !marker.value

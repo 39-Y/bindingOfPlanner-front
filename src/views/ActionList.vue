@@ -4,6 +4,11 @@
     <v-container class="">
       <v-col cols="auto">
         <v-btn density="compact" icon="mdi-plus" @click="addNewAction"></v-btn>
+        <v-btn  density="compact" prepend-icon="mdi-check-circle" @click="saveActions">
+          <template v-slot:prepend>
+            <v-icon color="success"></v-icon>
+          </template>
+        </v-btn>
       </v-col>
       <v-row no-gutters>
 
@@ -35,18 +40,15 @@
 </template>
 
 <script setup>
-  import { onMounted, ref } from "vue";
+import {onMounted, reactive, ref} from "vue";
   import ActionCard from "@/components/ActionCard.vue";
   import { getActions} from "@/api/actions";
   import { VueDraggableNext } from 'vue-draggable-next'
+  import ActionCache from "@/model/ActionCache";
 
-  const actionCache = ref({
-    update: [],
-    delete: [],
-    insert: []
-  })
+  const actionCache = reactive(new ActionCache());
   const actions = ref([]);
-  const initACtion = () => {
+  const initActionCard = () => {
     return {
     id: -1,
     cardTitle: 'Untitle',
@@ -55,10 +57,9 @@
     uniqKey: makeUniqueKey()
   }}
   const updateActionsAndCache = (idx, action) => {
-
     updateActions(idx, action);
     updateCacheByModifiedCard(action);
-    console.log(actionCache.value)
+    console.log(actionCache)
   }
 
   const updateActions = (idx, action) => {
@@ -68,26 +69,14 @@
   const updateCacheByModifiedCard = (actionCard) => {
     const cmmd = isNewAction(actionCard) ? 'insert' : 'update';
     const parsingData = parseActionCache(actionCard);
-    const cacheIdx = indexOfCache(cmmd, actionCard);
 
-    if(cacheIdx < 0){
-      actionCache.value[cmmd].push(parsingData);
-      return;
-    }
-    actionCache.value[cmmd][cacheIdx] = parsingData;
-  }
-
-  const indexOfCache = (cmmd, action) => {
-    if(!cmmd || !actionCache.value[cmmd]){
-      return -1;
-    }
-    return actionCache.value[cmmd].findIndex(act => act.uniqKey === action.uniqKey);
+    actionCache.put(cmmd, parsingData);
+    console.log("updateCache:",actionCache)
   }
 
   const deleteActionsAndCache = (idx, action) => {
     deleteActions(idx);
     updateCacheByDeletedCard(action);
-    console.log(actionCache.value)
 
   }
 
@@ -97,17 +86,11 @@
 
   const updateCacheByDeletedCard = (actionCard) => {
     const parsingData = parseActionCache(actionCard);
-    let cmmd = 'insert';
+    let clearCmmd = isNewAction(actionCard)? 'insert':'update';
 
-    //기존 Action일 경우 delete cache에 저장
-    if(!isNewAction(actionCard)){
-      actionCache.value['delete'].push(parsingData);
-      cmmd = 'update';
-    }
     //update or insert cache에서 action 삭제
-    const idx = indexOfCache(cmmd, actionCard);
-    if(idx > -1)
-      actionCache.value[cmmd].splice(idx, 1);
+    actionCache.clear(clearCmmd, parsingData, isNewAction((actionCard)))
+    console.log("deleteCache:",actionCache)
   }
 
   const isNewAction = (action) => {
@@ -143,9 +126,9 @@
   }
 
   const addNewAction = () => {
-    let newAction = initACtion();
-    actions.value.unshift(newAction);
-    actionCache.value.insert.push(parseActionCache(newAction));
+    let newActionCard = initActionCard();
+    actions.value.unshift(newActionCard);
+    actionCache.add('insert', parseActionCache(newActionCard))
   }
 
   const loadActions = async () => {
@@ -161,6 +144,10 @@
     }
     return actionList.map(parseActionCard);
   };
+
+  const saveActions = ()=>{
+
+  }
 
   onMounted(() =>{
     loadActions();

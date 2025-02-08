@@ -93,7 +93,7 @@ describe( 'ActionList Test', () =>{
 
     //act
     actionListComp.updateActionsAndCache(0,testAction);
-    const updateAction = actionListComp.actionCache.update[0];
+    const updateAction = actionListComp.actionCache.getUpdate[0];
 
     //asert
     expect(updateAction.id).toBe(testAction.id);
@@ -102,14 +102,14 @@ describe( 'ActionList Test', () =>{
     expect(updateAction.isDone).toBe(testAction.isDone);
   })
 
-  it('[updateActionsAndCache] => 빈 Action을 추가하고 변경했을 때 insert에 추가된다.', ()=>{
+  it('[updateActionsAndCache] => 빈 Action을 추가하고 변경했을 때도 insert에 추가된다.', ()=>{
     actionListComp.addNewAction();
-    const newAction = actionListComp.actionCache.insert[0];
+    const newAction = actionListComp.actionCache.getInsert[0];
     newAction.cardTitle = '변경된 제목'
 
     actionListComp.updateActionsAndCache(0, newAction);
 
-    const updatedNewAction = actionListComp.actionCache.insert[0];
+    const updatedNewAction = actionListComp.actionCache.getInsert[0];
 
     expect(updatedNewAction.title).toBe(newAction.cardTitle);
 
@@ -141,7 +141,7 @@ describe( 'ActionList Test', () =>{
 
     //act
     actionListComp.addNewAction();
-    const insertAction = actionListComp.actionCache.insert[0];
+    const insertAction = actionListComp.actionCache.getInsert[0];
 
     //asert
     expect(insertAction.title).toBe('Untitle');
@@ -156,8 +156,8 @@ describe( 'ActionList Test', () =>{
 
     expect(actionListComp.actions.idx).toBeUndefined();
 
-    expect(actionListComp.actionCache.delete[0].uniqKey).toBe(testAction.uniqKey);
-    expect(actionListComp.actionCache.delete[0].id).toBe(testAction.id);
+    expect(actionListComp.actionCache.getDelete[0].uniqKey).toBe(testAction.uniqKey);
+    expect(actionListComp.actionCache.getDelete[0].id).toBe(testAction.id);
   })
 
   it('[updateCacheByDeletedCard] => 삭제할 Action은 delete에 있고, update 또는 insert에는 없다.', ()=>{
@@ -165,9 +165,9 @@ describe( 'ActionList Test', () =>{
     actionListComp.updateCacheByModifiedCard(testActionCard);
     actionListComp.updateCacheByDeletedCard(testActionCard);
 
-    expect(cache.delete.some(action => action.uniqKey === testAction.uniqKey)).toBe(true);
-    expect(cache.insert.some(action => action.uniqKey === testAction.uniqKey)).toBe(false);
-    expect(cache.update.some(action => action.uniqKey === testAction.uniqKey)).toBe(false);
+    expect(cache.getDelete.some(action => action.uniqKey === testAction.uniqKey)).toBe(true);
+    expect(cache.getInsert.some(action => action.uniqKey === testAction.uniqKey)).toBe(false);
+    expect(cache.getUpdate.some(action => action.uniqKey === testAction.uniqKey)).toBe(false);
   })
 
   it('[updateCacheByDeletedCard] => 새로운 Action은 delete에 저장되지 않는다', () => {
@@ -176,6 +176,6 @@ describe( 'ActionList Test', () =>{
 
     actionListComp.updateCacheByDeletedCard(newAction);
 
-    expect(actionListComp.actionCache.delete.some(action => action.uniqKey === newAction.uniqKey)).toBe(false);
+    expect(actionListComp.actionCache.getDelete.some(action => action.uniqKey === newAction.uniqKey)).toBe(false);
   })
 })

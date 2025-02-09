@@ -1,38 +1,40 @@
 import ActionList from "@/views/ActionList.vue";
 import {getActions} from "@/api/actions";
 import {shallowMount} from "@vue/test-utils";
+import ActionCard from "@/model/ActionCard";
+import ActionData from "@/model/ActionData";
 
 jest.mock('@/api/actions', ()=>({
   getActions: jest.fn()
 }))
 
 let actionListComp;
-let testAction =  {
-  id: 1001,
-  title: 'test title2',
-  content: 'test content2',
-  planDate: new Date("2025-02-04T23:00:00"),
-  uniqKey: 'abcd',
-  isDone: true
-};
+let testAction =  ActionData.builder()
+                            .id(1001)
+                            .title('test title2')
+                            .content('test content2')
+                            .planDate(new Date("2025-02-04T23:00:00"))
+                            .isDone(true)
+                            .uniqKey('abcd')
+                            .build();
 
-let testAction2 =  {
-  id: 1002,
-  title: 'test title22',
-  content: 'test content22',
-  planDate: new Date("2025-02-04T23:00:00"),
-  uniqKey: 'abcdef',
-  isDone: true
-};
+let testAction2 =  ActionData.builder()
+                            .id(1002)
+                            .title('test title22')
+                            .content('test content22')
+                            .planDate(new Date("2025-02-04T23:00:00"))
+                            .isDone(true)
+                            .uniqKey('abcdef')
+                            .build();
 
-let testActionCard =  {
-  id: 1001,
-  cardTitle: 'test title2',
-  cardContent: 'test content2',
-  cardPlanDate: new Date("2025-02-04T23:00:00"),
-  uniqKey: 'abcd',
-  isDone: true
-};
+let testActionCard = ActionCard.builder()
+                                      .id(1001)
+                                      .cardTitle('test title2')
+                                      .cardContent('test content2')
+                                      .cardPlanDate(new Date("2025-02-04T23:00:00"))
+                                      .isDone(true)
+                                      .uniqKey('abcd')
+                                      .build();
 
 let testActionList = [testAction]
 
@@ -45,33 +47,6 @@ describe( 'ActionList Test', () =>{
     actionListComp = shallowMount(ActionList).vm;
   })
 
-  it('[parseActionCache] => testActionCard는 parse 후 testAction과 동일하다.', () => {
-    const parseAction = actionListComp.parseActionCache(testActionCard);
-    expect(parseAction.toString()).toBe(testAction.toString());
-  })
-
-  it('[parseActionCard] => testAction은 parse 후 testActionCard와 동일하다.', ()=>{
-    const parseActionCard = actionListComp.parseActionCard(testAction);
-    expect(parseActionCard.toString()).toBe(testActionCard.toString());
-  })
-
-  it('[parseActionCard] => parseActionCard와 parseActionCache는 역변환 관계다.', ()=>{
-    const parseActionCard = actionListComp.parseActionCard(testAction);
-    const parseAction = actionListComp.parseActionCache(parseActionCard);
-    expect(parseAction).toBe(parseAction);
-    expect(actionListComp.parseActionCard(parseAction).toString()).toBe(parseActionCard.toString());
-  })
-
-  it('[makeUniqueKey] => 난수로 만든 uniqueKey 연달아 생성해도 동일하지 않다.', ()=>{
-    const uniqKey1 = actionListComp.makeUniqueKey();
-    const uniqKey2 = actionListComp.makeUniqueKey();
-    const uniqKey3 = actionListComp.makeUniqueKey();
-
-    expect(uniqKey1).not.toBe(uniqKey2);
-    expect(uniqKey2).not.toBe(uniqKey3);
-    expect(uniqKey1).not.toBe(uniqKey3);
-  })
-
   it('[loadActions] => getActions로 조회한 action을 cardList로 변환한다.', ()=>{
     //action
     actionListComp.loadActions();
@@ -82,7 +57,7 @@ describe( 'ActionList Test', () =>{
 
   it('[updateActionsAndCache] => actions, cache의 크기가 0보다 크다 ', ()=>{
     //act
-    actionListComp.updateActionsAndCache(0,testAction);
+    actionListComp.updateActionsAndCache(0,testActionCard);
 
     //assert
     expect(actionListComp.actions.length).toBeGreaterThan(0);
@@ -92,26 +67,26 @@ describe( 'ActionList Test', () =>{
   it('[updateActionsAndCache] => cache에 추가된 Action은 TestAction이다. ', ()=>{
 
     //act
-    actionListComp.updateActionsAndCache(0,testAction);
+    actionListComp.updateActionsAndCache(0,testActionCard);
     const updateAction = actionListComp.actionCache.getUpdate[0];
-
+    console.log(actionListComp.actionCache.getUpdate)
     //asert
-    expect(updateAction.id).toBe(testAction.id);
-    expect(updateAction.title).toBe(testAction.cardTitle);
-    expect(updateAction.content).toBe(testAction.cardContent);
-    expect(updateAction.isDone).toBe(testAction.isDone);
+    expect(updateAction.id).toBe(testActionCard.id);
+    expect(updateAction.title).toBe(testActionCard.cardTitle);
+    expect(updateAction.content).toBe(testActionCard.cardContent);
+    expect(updateAction.isDone).toBe(testActionCard.isDone);
   })
 
   it('[updateActionsAndCache] => 빈 Action을 추가하고 변경했을 때도 insert에 추가된다.', ()=>{
-    actionListComp.addNewAction();
-    const newAction = actionListComp.actionCache.getInsert[0];
-    newAction.cardTitle = '변경된 제목'
+    actionListComp.addNewActionCard();
+    const newActionData = actionListComp.actionCache.getInsert[0];
+    newActionData.title = '변경된 제목'
 
-    actionListComp.updateActionsAndCache(0, newAction);
+    actionListComp.updateActionsAndCache(0, newActionData.parseActionCard());
 
-    const updatedNewAction = actionListComp.actionCache.getInsert[0];
+    const updatedNewActionData = actionListComp.actionCache.getInsert[0];
 
-    expect(updatedNewAction.title).toBe(newAction.cardTitle);
+    expect(updatedNewActionData.title).toBe(newActionData.cardTitle);
 
   })
 
@@ -126,21 +101,21 @@ describe( 'ActionList Test', () =>{
   it('[addAction] => Actions에 빈 Action이 새로 생성. ', ()=>{
 
     //act
-    actionListComp.addNewAction();
-    const firstAction = actionListComp.actions[0];
-    console.log(firstAction)
+    actionListComp.addNewActionCard();
+    const firstActionData = actionListComp.actions[0];
+    console.log(firstActionData)
 
     //asert
-    expect(firstAction.id).toBe(-1);
-    expect(firstAction.cardTitle).toBe('Untitle');
-    expect(firstAction.cardContent).toBe('');
-    expect(firstAction.uniqKey).not.toBe('');
+    expect(firstActionData.id).toBe(-1);
+    expect(firstActionData.cardTitle).toBe('Untitle');
+    expect(firstActionData.cardContent).toBe('');
+    expect(firstActionData.uniqKey).not.toBe('');
   })
 
   it('[addAction] => actionCache.insert에 Action이 저장 ', ()=>{
 
     //act
-    actionListComp.addNewAction();
+    actionListComp.addNewActionCard();
     const insertAction = actionListComp.actionCache.getInsert[0];
 
     //asert
@@ -152,7 +127,7 @@ describe( 'ActionList Test', () =>{
 
   it('[deleteActionsAndCache] => actions에서는 사라지고, cache delete에 저장된다.', ()=>{
     const idx = 0;
-    actionListComp.deleteActionsAndCache(idx, testAction);
+    actionListComp.deleteActionsAndCache(idx, testActionCard);
 
     expect(actionListComp.actions.idx).toBeUndefined();
 
@@ -171,7 +146,7 @@ describe( 'ActionList Test', () =>{
   })
 
   it('[updateCacheByDeletedCard] => 새로운 Action은 delete에 저장되지 않는다', () => {
-    actionListComp.addNewAction();
+    actionListComp.addNewActionCard();
     const newAction = actionListComp.actions[0];
 
     actionListComp.updateCacheByDeletedCard(newAction);

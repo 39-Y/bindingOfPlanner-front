@@ -9,3 +9,9 @@ export function getActions() {
 
   return result? result : {};
 }
+
+export function postSaveActions() {
+  let result= actions.post('/list');
+
+  return result? result : {};
+}

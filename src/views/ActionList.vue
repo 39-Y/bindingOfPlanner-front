@@ -3,7 +3,7 @@
   <div>
     <v-container class="">
       <v-col cols="auto">
-        <v-btn density="compact" icon="mdi-plus" @click="addNewAction"></v-btn>
+        <v-btn density="compact" icon="mdi-plus" @click="addNewActionCard"></v-btn>
         <v-btn  density="compact" prepend-icon="mdi-check-circle" @click="saveActions">
           <template v-slot:prepend>
             <v-icon color="success"></v-icon>
@@ -25,11 +25,11 @@
                 :group="{ name: 'people', pull: 'clone', put: false }"
                 @change="console.log('change')"
               >
-                <ActionCard :action="action"
+                <ActionCardComp :action="action"
                             @update:action="updateActionsAndCache(idx, action)"
                             @delete:action="deleteActionsAndCache(idx, action)"
                 >
-                </ActionCard>
+                </ActionCardComp>
               </VueDraggableNext>
             </v-sheet>
           </v-col>
@@ -41,24 +41,18 @@
 
 <script setup>
 import {onMounted, reactive, ref} from "vue";
-  import ActionCard from "@/components/ActionCard.vue";
+  import ActionCard from "@/model/ActionCard";
+  import ActionCardComp from "@/components/ActionCard.vue";
   import { getActions} from "@/api/actions";
   import { VueDraggableNext } from 'vue-draggable-next'
   import ActionCache from "@/model/ActionCache";
 
   const actionCache = reactive(new ActionCache());
   const actions = ref([]);
-  const initActionCard = () => {
-    return {
-    id: -1,
-    cardTitle: 'Untitle',
-    cardContent: '',
-    isDone : false,
-    uniqKey: makeUniqueKey()
-  }}
-  const updateActionsAndCache = (idx, action) => {
-    updateActions(idx, action);
-    updateCacheByModifiedCard(action);
+
+  const updateActionsAndCache = (idx, actionCard) => {
+    updateActions(idx, actionCard);
+    updateCacheByModifiedCard(actionCard);
     console.log(actionCache)
   }
 
@@ -67,11 +61,10 @@ import {onMounted, reactive, ref} from "vue";
   }
 
   const updateCacheByModifiedCard = (actionCard) => {
-    const cmmd = isNewAction(actionCard) ? 'insert' : 'update';
-    const parsingData = parseActionCache(actionCard);
+    const cmmd = actionCard.isNew() ? 'insert' : 'update';
+    const parsingData = actionCard.parseActionData();
 
     actionCache.put(cmmd, parsingData);
-    console.log("updateCache:",actionCache)
   }
 
   const deleteActionsAndCache = (idx, action) => {
@@ -85,50 +78,16 @@ import {onMounted, reactive, ref} from "vue";
   }
 
   const updateCacheByDeletedCard = (actionCard) => {
-    const parsingData = parseActionCache(actionCard);
-    let clearCmmd = isNewAction(actionCard)? 'insert':'update';
+    const parsingData = actionCard.parseActionData();
+    let clearCmmd = actionCard.isNew()? 'insert':'update';
 
-    //update or insert cache에서 action 삭제
-    actionCache.clear(clearCmmd, parsingData, isNewAction((actionCard)))
-    console.log("deleteCache:",actionCache)
+    actionCache.clear(clearCmmd, parsingData, actionCard.isNew());
   }
 
-  const isNewAction = (action) => {
-    return action.id < 0;
-  }
-
-
-  const parseActionCache = (action) => {
-    return {
-      id: action.id,
-      title: action.cardTitle,
-      content: action.cardContent,
-      planDate: action.cardPlanDate,
-      isDone : action.isDone,
-      uniqKey: action.uniqKey || makeUniqueKey()
-    };
-  }
-
-  const parseActionCard = (action) => {
-    return {
-      id:action.id,
-      cardTitle: action.title,
-      cardContent: action.content,
-      isDone: !!action.isDone,
-      cardPlanDate: action.planDate,
-      uniqKey: action.uniqKey || makeUniqueKey()
-    }
-  }
-
-  const makeUniqueKey = () => {
-    const randomTime = Date.now() + Math.floor(Math.random() *  1000000000000);
-    return randomTime.toString(36) + Math.random().toString(36).substring(2, 5);
-  }
-
-  const addNewAction = () => {
-    let newActionCard = initActionCard();
+  const addNewActionCard = () => {
+    let newActionCard = ActionCard.builder().build();
     actions.value.unshift(newActionCard);
-    actionCache.add('insert', parseActionCache(newActionCard))
+    actionCache.add('insert', newActionCard.parseActionData());
   }
 
   const loadActions = async () => {
@@ -138,14 +97,15 @@ import {onMounted, reactive, ref} from "vue";
     console.log("actions:",actions.value)
   };
 
-  const parseActionCardList = (actionList) => {
-    if(!actionList){
+  const parseActionCardList = (actionDataList) => {
+    if(!actionDataList){
       return [];
     }
-    return actionList.map(parseActionCard);
+    return actionDataList.map(data => new ActionCard(data));
   };
 
   const saveActions = ()=>{
+    console.log("actionCache:",actionCache)
 
   }
 

@@ -88,17 +88,18 @@
 </template>
 
 <script setup>
-import { defineProps, nextTick, ref, watch } from 'vue';
+import {defineProps, nextTick, ref, watch} from 'vue';
 import { format } from 'date-fns';
+import ActionCard from "@/model/ActionCard";
 
 const props = defineProps(
 {  action: {
-    type: Object,
-    required: true
+    type: ActionCard,
+    required: true,
+    default: new ActionCard()
   },
 });
 const emit = defineEmits(['update:action', 'delete:action']);
-
 const actionCard = ref(props.action);
 const isChange = ref(false);
 const isTitleEditing = ref(false);

@@ -10,8 +10,11 @@ export function getActions() {
   return result? result : {};
 }
 
-export function postSaveActions() {
-  let result= actions.post('/list');
+export function postSaveActions(cache) {
+  let result= actions.post('/list', cache)
+    .then(error => {
+      console.log("Error:",error)
+    });
 
   return result? result : {};
 }

@@ -40,10 +40,10 @@
 </template>
 
 <script setup>
-import {onMounted, reactive, ref} from "vue";
+  import {onMounted, reactive, ref} from "vue";
   import ActionCard from "@/model/ActionCard";
   import ActionCardComp from "@/components/ActionCard.vue";
-  import { getActions} from "@/api/actions";
+  import {getActions, postSaveActions} from "@/api/actions";
   import { VueDraggableNext } from 'vue-draggable-next'
   import ActionCache from "@/model/ActionCache";
 
@@ -92,8 +92,7 @@ import {onMounted, reactive, ref} from "vue";
 
   const loadActions = async () => {
     const res = await getActions();
-
-    actions.value = parseActionCardList(res.data);
+    actions.value = parseActionCardList(res.data.data);
     console.log("actions:",actions.value)
   };
 
@@ -106,7 +105,7 @@ import {onMounted, reactive, ref} from "vue";
 
   const saveActions = ()=>{
     console.log("actionCache:",actionCache)
-
+    postSaveActions(actionCache)
   }
 
   onMounted(() =>{

@@ -1,21 +1,14 @@
 <template>
-   <v-toolbar>
-    <v-toolbar-side-icon></v-toolbar-side-icon>
-    <v-toolbar-title>Title</v-toolbar-title>
-    <v-spacer></v-spacer>
-    <v-toolbar-items class="hidden-sm-and-down">
-      <v-btn flat>Link One</v-btn>
-      <v-btn flat>Link Two</v-btn>
-      <v-btn flat>Link Three</v-btn>
-    </v-toolbar-items>
-  </v-toolbar>
-  <v-app>
-    <v-main>
-      <router-view />
-    </v-main>
-  </v-app>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+  <TheNav></TheNav>
+   <TheView></TheView>
+  <!-- 그룹 -->
+
+
+
 </template>
 
 <script setup>
-  //
+  import TheNav from "./components/TheNav.vue"
+  import TheView from "./components/TheView.vue"
 </script>

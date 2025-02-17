@@ -7,6 +7,8 @@
 // Styles
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
+import { VCalendar } from 'vuetify/labs/VCalendar'
+import { VDateInput } from 'vuetify/labs/VDateInput'
 
 // Composables
 import { createVuetify } from 'vuetify'
@@ -15,5 +17,9 @@ import { createVuetify } from 'vuetify'
 export default createVuetify({
   theme: {
     defaultTheme: 'dark',
+  },
+  components: {
+    VCalendar,
+    VDateInput,
   },
 })
